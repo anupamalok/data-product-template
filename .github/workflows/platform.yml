@@ -1,0 +1,41 @@
+name: Deploy Data Product
+
+on:
+  workflow_dispatch:
+    inputs:
+      product_repo:
+        description: "GitHub repo URL of data product"
+        required: true
+      product_ref:
+        description: "Commit SHA or branch"
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout platform repo
+        uses: actions/checkout@v4
+
+      - name: Checkout domain data product
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.product_repo }}
+          ref: ${{ inputs.product_ref }}
+          path: product
+
+      - name: Validate domain repo
+        run: |
+          test -f product/contract.yml
+          test -d product/dbt
+
+      - name: Run ingestion
+        run: python ingestion/framework/ingest_oracle.py product/contract.yml
+
+      - name: Run dbt
+        run: |
+          bash transformations/dbt_runner/run.sh product/dbt
+
+      - name: Apply governance
+        run: snowsql -f governance/apply_grants.sql
