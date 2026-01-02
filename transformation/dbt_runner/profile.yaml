@@ -1,0 +1,12 @@
+platform_runner:
+  target: prod
+  outputs:
+    prod:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      role: PLATFORM_ROLE
+      warehouse: PLATFORM_WH
+      database: ANALYTICS
+      schema: "{{ env_var('DBT_SCHEMA') }}"
